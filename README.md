@@ -16,6 +16,6 @@ My name is Deepak Choudhary, and I'm an Information Security Specialist at Kroll
 - **Python:** Currently in the process of learning Python for data analysis, automation, and scripting.
 
 ## Connect with Me
-Feel free to connect with me on [LinkedIn]([https://www.linkedin.com/in/deepak-choudhary-8a957388/]) to learn more about my work and projects.
+Feel free to connect with me on [LinkedIn](https://www.linkedin.com/in/deepak-choudhary-8a957388/) to learn more about my work and projects.
 
 Let's connect and collaborate on exciting projects together! 😊
