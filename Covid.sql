@@ -102,14 +102,14 @@ ORDER BY
 
 
 
-
+-- People Vaccinated
 SELECT 
     cd.continent,
     cd.location,
     cd.date,
     cd.population,
     cv.new_vaccinations,
-    SUM(Cast(cv.new_vaccinations as bigint)) OVER (PARTITION BY cd.location ORDER BY cd.date ,cd.location)
+    SUM(Cast(cv.new_vaccinations as bigint)) OVER (PARTITION BY cd.location ORDER BY cd.date ,cd.location) as RollingPeopleVaccinated
 FROM 
     Covid..CovidDeaths cd
 JOIN 
@@ -121,3 +121,91 @@ WHERE
     cd.continent IS NOT NULL and cd.location like '%India%'
 ORDER BY 
     cd.location, cd.date;
+
+
+
+-- USe CTE
+With  PopvsVac (continent , location , Date , Population , New_Vaccinations ,RollingpeopleVaccinated)
+as 
+(
+SELECT 
+    cd.continent,
+    cd.location,
+    cd.date,
+    cd.population,
+    cv.new_vaccinations,
+    SUM(Cast(cv.new_vaccinations as bigint)) OVER (PARTITION BY cd.location ORDER BY cd.date ,cd.location) as RollingPeopleVaccinated
+FROM 
+    Covid..CovidDeaths cd
+JOIN 
+    Covid..CovidVaccinations cv 
+ON 
+    cd.location = cv.location 
+    AND cd.date = cv.date 
+WHERE 
+    cd.continent IS NOT NULL and cd.location like '%India%'
+--ORDER BY 
+--    cd.location, cd.date
+)
+Select * , (Cast(RollingpeopleVaccinated as float)/Nullif(Cast(Population as float),0))*100 from PopvsVac ;
+
+
+-- Temp Table
+Drop Table if exists #PercentPeopleVaccinated
+Create Table #PercentPeopleVaccinated
+(
+Continent nvarchar(255),
+Location nvarchar(255),
+Date datetime,
+Population numeric,
+New_Vaccinations numeric,
+RollingpeopleVaccinated numeric
+)
+
+Insert into #PercentPeopleVaccinated
+SELECT 
+    cd.continent,
+    cd.location,
+    cd.date,
+    cd.population,
+    cv.new_vaccinations,
+    SUM(Cast(cv.new_vaccinations as bigint)) OVER (PARTITION BY cd.location ORDER BY cd.date ,cd.location) as RollingPeopleVaccinated
+FROM 
+    Covid..CovidDeaths cd
+JOIN 
+    Covid..CovidVaccinations cv 
+ON 
+    cd.location = cv.location 
+    AND cd.date = cv.date 
+--WHERE 
+--    cd.continent IS NOT NULL and cd.location like '%India%'
+--ORDER BY 
+--    cd.location, cd.date
+
+Select * , (Cast(RollingpeopleVaccinated as float)/Nullif(Cast(Population as float),0))*100 from #PercentPeopleVaccinated ;
+
+Use Covid ;
+-- Creating View to store Data
+
+Create View PercentPeopleVaccinated as 
+SELECT 
+    cd.continent,
+    cd.location,
+    cd.date,
+    cd.population,
+    cv.new_vaccinations,
+    SUM(Cast(cv.new_vaccinations as bigint)) OVER (PARTITION BY cd.location ORDER BY cd.date ,cd.location) as RollingPeopleVaccinated
+FROM 
+    Covid..CovidDeaths cd
+JOIN 
+    Covid..CovidVaccinations cv 
+ON 
+    cd.location = cv.location 
+    AND cd.date = cv.date 
+WHERE 
+    cd.continent IS NOT NULL --and cd.location like '%India%'
+--ORDER BY 
+ --  cd.location, cd.date
+
+
+ Select * from PercentPeopleVaccinated ;
